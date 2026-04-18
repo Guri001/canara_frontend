@@ -144,7 +144,9 @@ function App() {
   return (
     <div className="app-container">
       <h1 className="title">Finance Hub</h1>
-      <p className="subtitle">Canara Bank AI Parser</p>
+      <p className="subtitle">
+        Canara Bank AI Parser <span style={{ marginLeft: '0.75rem', fontStyle: 'italic', fontSize: '0.9rem' }}>— Made with ❤️ by Gurvinder</span>
+      </p>
       
       {!data ? (
         <div 
