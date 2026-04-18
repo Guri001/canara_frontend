@@ -39,7 +39,8 @@ function App() {
     });
 
     try {
-      const res = await axios.post('http://localhost:3001/api/upload', formData, {
+      const apiUrl = import.meta.env.PROD ? 'https://canara-backend-0v6m.onrender.com/api/upload' : 'http://localhost:3001/api/upload';
+      const res = await axios.post(apiUrl, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       if (res.data.success) {
