@@ -38,7 +38,7 @@ function App() {
     });
 
     try {
-      const res = await axios.post('/api/upload', formData, {
+      const res = await axios.post('https://canara-backend-0v6m.onrender.com/api/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       if (res.data.success) {
