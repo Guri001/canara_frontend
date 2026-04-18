@@ -1,0 +1,219 @@
+:root {
+  --bg-color: #0b0f19;
+  --panel-bg: rgba(22, 28, 45, 0.6);
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --credit-color: #10b981;
+  --debit-color: #ef4444;
+  --border-color: rgba(255, 255, 255, 0.08);
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  min-height: 100vh;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+h1.title {
+  font-size: 2.5rem;
+  letter-spacing: -0.05em;
+  background: linear-gradient(to right, #60a5fa, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  margin-bottom: 3rem;
+  font-weight: 300;
+}
+
+/* Glass panel utility */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* File Upload */
+.upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  border: 2px dashed rgba(59, 130, 246, 0.4);
+  border-radius: 16px;
+  background: rgba(59, 130, 246, 0.05);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upload-container:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.8);
+}
+
+.upload-btn {
+  margin-top: 1.5rem;
+  padding: 0.75rem 2rem;
+  background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+  color: white;
+  border: none;
+  border-radius: 99px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  font-size: 1rem;
+}
+
+.upload-btn:hover {
+  opacity: 0.9;
+}
+
+/* Summary Cards */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card p {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summary-card h2 {
+  font-size: 1.75rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.credit-val { color: var(--credit-color); }
+.debit-val { color: var(--debit-color); }
+
+/* Table */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.875rem;
+  vertical-align: top;
+}
+
+tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.description-cell {
+  max-width: 300px;
+  white-space: pre-wrap;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.date-cell {
+  white-space: nowrap;
+}
+
+/* Date Filters */
+.filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+input[type="date"] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color-scheme: dark;
+}
+
+.tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tab.active {
+  color: white;
+  border-bottom-color: var(--accent-blue);
+}
+
+/* Loading overlay */
+.loading {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
