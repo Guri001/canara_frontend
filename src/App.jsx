@@ -8,6 +8,7 @@ import {
 function App() {
   const [files, setFiles] = useState([]);
   const [data, setData] = useState(null);
+  const [accountInfo, setAccountInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -38,11 +39,14 @@ function App() {
     });
 
     try {
-      const res = await axios.post('https://canara-backend-0v6m.onrender.com/api/upload', formData, {
+      const res = await axios.post('http://localhost:3001/api/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       if (res.data.success) {
          setData(res.data.data);
+         if (res.data.accountDetails) {
+            setAccountInfo(res.data.accountDetails);
+         }
       } else {
          setError('Failed to parse document(s)');
       }
@@ -111,6 +115,29 @@ function App() {
      return Object.values(groups);
   }, [filteredData]);
 
+  const exportCSV = () => {
+    if (!filteredData || filteredData.length === 0) return;
+    const headers = ['Date', 'Description', 'Type', 'Amount', 'Balance'];
+    const rows = filteredData.map(txn => {
+        return [
+          txn.date ? format(parseISO(txn.date), 'dd MMM yyyy') : '',
+          `"${(txn.description || '').replace(/"/g, '""')}"`, // escape quotes
+          txn.type,
+          txn.amount || '',
+          txn.balance || ''
+        ].join(',');
+    });
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "bank_statement_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) return <div className="loading">Processing Strategy Protocol...</div>;
 
   return (
@@ -150,24 +177,63 @@ function App() {
       ) : (
         <>
           <div className="glass-panel" style={{ marginBottom: '2rem' }}>
-             <div className="filters">
-                <div style={{display: 'flex', flexDirection: 'column'}}>
-                  <label style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.2rem'}}>Start Date</label>
+              <div className="filters">
+                <div className="filter-group">
+                  <label>Start Date</label>
                   <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
                 </div>
-                <div style={{display: 'flex', flexDirection: 'column'}}>
-                  <label style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.2rem'}}>End Date</label>
+                <div className="filter-group">
+                  <label>End Date</label>
                   <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
                 </div>
-                <button 
-                  className="upload-btn" 
-                  style={{ marginTop: 'auto', marginLeft: 'auto', padding: '0.5rem 1.5rem' }} 
-                  onClick={() => setData(null)}
-                >
-                  Upload New
-                </button>
+                <div className="action-buttons" style={{ display: 'flex', gap: '1rem', marginTop: 'auto', marginLeft: 'auto' }}>
+                  <button 
+                    className="upload-btn" 
+                    style={{ background: 'var(--accent-purple)' }} 
+                    onClick={() => window.print()}
+                  >
+                    Export PDF
+                  </button>
+                  <button 
+                    className="upload-btn" 
+                    style={{ background: 'var(--credit-color)' }} 
+                    onClick={exportCSV}
+                  >
+                    Export CSV
+                  </button>
+                  <button 
+                    className="upload-btn" 
+                    onClick={() => { setData(null); setAccountInfo(null); }}
+                  >
+                    Upload New
+                  </button>
+                </div>
              </div>
           </div>
+
+          {accountInfo && (
+             <div className="glass-panel" style={{ marginBottom: '2rem' }}>
+                <h3 style={{ margin: '0 0 1rem 0', color: 'var(--accent-blue)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', fontSize: '1.1rem' }}>Account Details</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                   <div>
+                       <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Account Name</p>
+                       <p style={{ margin: '0.2rem 0 0 0', fontWeight: 600, color: 'var(--text-main)' }}>{accountInfo.name || 'N/A'}</p>
+                   </div>
+                   <div>
+                       <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Account Number</p>
+                       <p style={{ margin: '0.2rem 0 0 0', fontWeight: 600, color: 'var(--text-main)' }}>{accountInfo.accountNo || 'N/A'}</p>
+                   </div>
+                   <div>
+                       <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Branch</p>
+                       <p style={{ margin: '0.2rem 0 0 0', fontWeight: 600, color: 'var(--text-main)' }}>{accountInfo.branch || 'N/A'}</p>
+                   </div>
+                   <div>
+                       <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>IFSC</p>
+                       <p style={{ margin: '0.2rem 0 0 0', fontWeight: 600, color: 'var(--text-main)' }}>{accountInfo.ifsc || 'N/A'}</p>
+                   </div>
+                </div>
+             </div>
+          )}
 
           {summary && (
             <div className="summary-grid">
@@ -194,12 +260,12 @@ function App() {
             <div className="glass-panel" style={{ marginBottom: '2rem', height: '300px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                   <XAxis dataKey="month" stroke="var(--text-muted)" />
                   <YAxis stroke="var(--text-muted)" />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)', backdropFilter: 'blur(10px)' }}
-                    itemStyle={{ color: '#fff' }}
+                    contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                    itemStyle={{ color: 'var(--text-main)' }}
                   />
                   <Legend />
                   <Bar dataKey="credit" fill="var(--credit-color)" radius={[4, 4, 0, 0]} />
