@@ -39,7 +39,8 @@ function App() {
     });
 
     try {
-      const apiUrl = import.meta.env.PROD ? 'https://canara-backend-0v6m.onrender.com/api/upload' : 'http://localhost:3001/api/upload';
+      // Swapped to localhost for local testing. Change back to 'https://canara-backend-0v6m.onrender.com/api/upload' when deploying.
+      const apiUrl = 'http://localhost:3001/api/upload';
       const res = await axios.post(apiUrl, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -83,23 +84,37 @@ function App() {
 
     const net = totalCredit - totalDebit;
 
-    // determine opening/closing
-    const openingNode = data.find(t => t.type === 'balance');
-    const systemOpening = openingNode ? openingNode.balance : 0;
+    // determine opening/closing using true chronological ledger running balance
+    let systemOpening = 0;
     
-    // For specific opening matching timeframe
-    let relativeOpening = systemOpening;
-    if (startDate) {
-      const start = parseISO(startDate);
-      // add up things before this date
-      const beforeTxns = data.filter(t => t.date && isBefore(parseISO(t.date), start));
-      beforeTxns.forEach(t => {
-         if (t.type === 'credit') relativeOpening += (t.amount || 0);
-         if (t.type === 'debit') relativeOpening -= (t.amount || 0);
-      });
+    // Globally sort all valid transactions mathematically
+    const globalSorted = data.filter(t => t.type !== 'balance').sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    if (globalSorted.length > 0) {
+         // The undisputed system opening balance is the first transaction's balance conceptually fully reversed
+         const globalFirst = globalSorted[0];
+         systemOpening = globalFirst.type === 'credit' ? globalFirst.balance - globalFirst.amount : globalFirst.balance + globalFirst.amount;
     }
+    
+    let relativeOpening = systemOpening;
+    let relativeClosing = systemOpening;
 
-    const relativeClosing = relativeOpening + net;
+    if (filteredData.length > 0) {
+        // Since filteredData is derived chronologically, the absolute anchor of the view is the last displayed transaction 
+        relativeClosing = filteredData[filteredData.length - 1].balance;
+        
+        // Reverse calculation dynamically fixes visual windows starting mid-statement 
+        const firstViewTxn = filteredData[0];
+        relativeOpening = firstViewTxn.type === 'credit' ? firstViewTxn.balance - firstViewTxn.amount : firstViewTxn.balance + firstViewTxn.amount;
+    } else if (startDate && globalSorted.length > 0) {
+        // Blank view space fallback
+        const start = parseISO(startDate);
+        const beforeTxns = globalSorted.filter(t => isBefore(new Date(t.date), start));
+        if (beforeTxns.length > 0) {
+           relativeOpening = beforeTxns[beforeTxns.length - 1].balance;
+           relativeClosing = relativeOpening;
+        }
+    }
 
     return { totalCredit, totalDebit, net, relativeOpening, relativeClosing };
   }, [data, filteredData, startDate, endDate]);
