@@ -40,7 +40,7 @@ function App() {
 
     try {
       // Swapped to localhost for local testing. Change back to 'https://canara-backend-0v6m.onrender.com/api/upload' when deploying.
-      const apiUrl = 'http://localhost:3001/api/upload';
+      const apiUrl = 'https://canara-backend-0v6m.onrender.com/api/upload';
       const res = await axios.post(apiUrl, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
